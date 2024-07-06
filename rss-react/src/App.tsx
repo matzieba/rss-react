@@ -1,35 +1,75 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { Component } from 'react';
+import Search from './Search';
+import ResultsList from './ResultsList';
+import ErrorBoundary from './ErrorBoundary';
+import axios from 'axios';
+import qs from 'qs';
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+interface IState {
+  searchTerm: string;
+  searchResults: any[]; // replace with your results type
 }
 
-export default App
+class App extends Component<{}, IState> {
+
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      searchTerm: '',
+      searchResults: []
+    };
+  }
+
+  setSearchTerm = (term: string) => {
+    this.setState({ searchTerm: term }, () => this.fetchData(term));
+  }
+
+  // lifecycle method to fetch data
+  componentDidMount() {
+    this.fetchData();
+  }
+
+  fetchData = (searchTerm = ''): void => {
+    // Define base url
+    const baseUrl = 'https://stapi.co/api/v1/rest';
+  
+    // We are going to apply the search term to the "name" field
+    const data = { name: searchTerm };
+  
+    const encodedData = qs.stringify(data);
+
+    axios.post(`${baseUrl}/animal/search`, encodedData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      params: {
+        pageNumber: 0,
+        pageSize: 10
+      }
+    })
+    .then(res => {
+      if(Array.isArray(res.data.animals)) {
+        this.setState({ searchResults: res.data.animals });
+      } else {
+        console.error('Server response does not contain an animals array.')
+      }
+    })
+    .catch(err => {
+      // Here you can handle request errors
+      console.error(err);
+    });
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <ErrorBoundary>
+          <Search setSearchTerm={this.setSearchTerm} searchTerm={this.state.searchTerm} />
+          <ResultsList searchResults={this.state.searchResults} />
+        </ErrorBoundary>
+      </div>
+    );
+  }
+}
+
+export default App;
