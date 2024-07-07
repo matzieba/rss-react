@@ -1,44 +1,45 @@
-import React, { Component } from 'react';
+import React, { Component, ChangeEvent, FormEvent, ReactNode } from 'react';
 
-interface IProps {
-  searchTerm: string;
+interface SearchProps {
   setSearchTerm: (term: string) => void;
+  searchTerm: string;
 }
 
-interface IState {
+interface SearchState {
   term: string;
 }
 
-class Search extends Component<IProps, IState> {
-  constructor(props: IProps) {
+class Search extends Component<SearchProps, SearchState> {
+  constructor(props: SearchProps) {
     super(props);
     this.state = {
-      term: ''
+      term: props.searchTerm || '',
     };
   }
 
-  componentDidUpdate(prevProps: IProps) {
+  handleInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    this.setState({ term: event.target.value });
+  };
+
+  handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    this.props.setSearchTerm(this.state.term.trim());
+  };
+
+  componentDidUpdate(prevProps: SearchProps): void {
     if (this.props.searchTerm !== prevProps.searchTerm) {
       this.setState({ term: this.props.searchTerm });
     }
   }
 
-  handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ term: event.target.value });
-  }
-
-  handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    this.props.setSearchTerm(this.state.term);
-  }
-
-  render() {
+  render(): ReactNode {
     return (
       <form onSubmit={this.handleSubmit}>
         <input
           type="text"
           value={this.state.term}
           onChange={this.handleInputChange}
+          placeholder="Search..."
         />
         <button type="submit">Search</button>
       </form>

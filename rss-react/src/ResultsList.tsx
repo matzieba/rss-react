@@ -1,19 +1,33 @@
-import React, { Component } from 'react';
+import React, { Component, ReactNode } from 'react';
 
-interface IProps {
-  searchResults: any[]; // replace with your results type
+interface Result {
+  id: string;
+  name: string;
+  uid: string;
 }
 
-class ResultsList extends Component<IProps> {
-    render() {
-        return (
-          <ul>
-            {Array.isArray(this.props.searchResults) && this.props.searchResults.map(result => (
-              <li key={result.id}>{result.name}</li>
-            ))}
-          </ul>
-        );
-      }
-    }
+interface ResultsListProps {
+  searchResults: Result[];
+}
+
+class ResultsList extends Component<ResultsListProps> {
+  render(): ReactNode {
+    const { searchResults } = this.props;
+    return (
+      <ul>
+        {Array.isArray(searchResults) && searchResults.length > 0 ? (
+          searchResults.map((result) => (
+            <li key={result.id}>
+              <h3>{result.name}</h3>
+              <p>{result.uid}</p>
+            </li>
+          ))
+        ) : (
+          <li>No results found</li>
+        )}
+      </ul>
+    );
+  }
+}
 
 export default ResultsList;

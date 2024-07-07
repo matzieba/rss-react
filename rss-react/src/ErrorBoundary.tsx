@@ -1,32 +1,38 @@
-import React, { Component, ReactNode } from "react";
+import React, { Component, ReactNode, ErrorInfo } from 'react';
 
-interface Props {
+interface ErrorBoundaryProps {
   children: ReactNode;
 }
 
-interface State {
-  hasError: boolean; 
+interface ErrorBoundaryState {
+  hasError: boolean;
 }
 
-class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false };
+    this.state = {
+      hasError: false,
+    };
+    console.log('ErrorBoundary constructed');
   }
 
-  static getDerivedStateFromError() {
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    console.log('getDerivedStateFromError called');
     return { hasError: true };
   }
 
-  componentDidCatch(error: any, errorInfo: any) {
-    console.error("ErrorBoundary caught an error", error, errorInfo);
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    console.error('ErrorBoundary caught an error', error, errorInfo);
   }
 
-  render() {
+  render(): ReactNode {
     if (this.state.hasError) {
+      console.log('Rendering fallback UI');
       return (
         <p>
-          There was a problem displaying this content. <button onClick={() => window.location.reload()}>Try again</button>
+          There was a problem displaying this content.
+          <button onClick={() => window.location.reload()}>Try again</button>
         </p>
       );
     }
